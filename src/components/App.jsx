@@ -16,6 +16,19 @@ export class App extends Component {
         filter: '',
     };
 
+    componentDidMount() {
+        const localContacts = localStorage.getItem('contacts');
+        const parsedContacts = JSON.parse(localContacts);
+        if (parsedContacts) {
+            this.setState({ contacts: parsedContacts });
+        }
+    }
+    componentDidUpdate(prevState) {
+        if (this.state.contacts !== prevState.contacts) {
+            localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+        }
+    }
+
     addPerson = data => {
         const person = {
             id: nanoid(),
@@ -25,8 +38,8 @@ export class App extends Component {
         this.checkForDuplicates(person)
             ? alert(`${person.name} is already in contacts`)
             : this.setState(prevState => ({
-                  contacts: [person, ...prevState.contacts],
-              }));
+                contacts: [person, ...prevState.contacts],
+            }));
     };
 
     checkForDuplicates = person =>
@@ -36,9 +49,7 @@ export class App extends Component {
 
     deletePerson = personId => {
         this.setState(prevState => ({
-            contacts: prevState.contacts.filter(
-                contact => contact.id !== personId
-            ),
+            contacts: prevState.contacts.filter(contact => contact.id !== personId),
         }));
     };
 
@@ -55,6 +66,7 @@ export class App extends Component {
     };
 
     render() {
+        const { filter } = this.state;
         const filteredPerson = this.getFilteredPerson();
         return (
             <div className={style.main_section}>
@@ -62,14 +74,8 @@ export class App extends Component {
                 <ContactForm onSubmit={this.addPerson} />
 
                 <h2>Contacts</h2>
-                <Filter
-                    value={this.state.filter}
-                    onChange={this.changeFilter}
-                />
-                <ContactList
-                    data={filteredPerson}
-                    onDeletePerson={this.deletePerson}
-                />
+                <Filter value={filter} onChange={this.changeFilter} />
+                <ContactList data={filteredPerson} onDeletePerson={this.deletePerson} />
             </div>
         );
     }
